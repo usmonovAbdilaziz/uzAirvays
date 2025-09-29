@@ -37,21 +37,15 @@ import { TicketsModule } from './humans/tickets/tickets.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         dialect: 'postgres',
-        host: String(process.env.DB_HOST),
-        port: Number(process.env.DB_PORT!) ,
-        username: String(process.env.DB_USER),
-        password: String(process.env.DB_PASS),
-        database: String(process.env.DB_NAME),
+        host: config.get<string>('DB_HOST'),
+        port: Number(config.get<string>('DB_PORT')),
+        username: config.get<string>('DB_USER'),
+        password: config.get<string>('DB_PASS'), // yoki DB_PASSWORD, .env ga moslang
+        database: config.get<string>('DB_NAME'),
         models: MODELS,
         autoLoadModels: true,
-        synchronize: true, // Changed from false to true to create tables
-        logging: config.get<string>('NODE_ENV') !== 'production',
-        pool: {
-          max: 10,
-          min: 0,
-          acquire: 30000,
-          idle: 10000,
-        },
+        synchronize: true,
+        logging: false,
       }),
     }),
 
