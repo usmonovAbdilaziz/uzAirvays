@@ -1,0 +1,41 @@
+name: Deploy to AWS
+
+# Har push qilganda main branch ga ishga tushadi
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Kodni checkout qilish
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Node.js muhitini sozlash
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # 3. AWS serverga SSH orqali ulanish va deploy.sh ishga tushirish
+      - name: Deploy to AWS
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ubuntu
+          key: ${{ secrets.AWS_KEY }}
+          port: 22
+          script: |
+            cd /home/ubuntu/uzairvays
+            git pull origin main
+            npm install
+            # tsbuildinfo ni o'chirish
+            if [ -f tsconfig.build.tsbuildinfo ]; then
+              rm tsconfig.build.tsbuildinfo
+            fi
+            npm run build
+            pm2 restart uzairvays || pm2 start dist/main.js --name uzairvays
